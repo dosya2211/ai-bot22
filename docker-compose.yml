@@ -1,0 +1,50 @@
+
+services:
+  bot:
+    build: ./bot
+    container_name: telegram_ai_crm_bot
+    env_file: .env
+    depends_on:
+      - qdrant
+      - redis
+      - kokoro
+      - baserow
+    restart: unless-stopped
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: qdrant
+    ports:
+      - "6333:6333"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    restart: unless-stopped
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    
+  kokoro:
+    image: ghcr.io/remsky/kokoro-fastapi-cpu:latest
+    container_name: kokoro
+    ports:
+      - "8880:8880"
+    restart: unless-stopped
+
+  baserow:
+    image: baserow/baserow:latest
+    container_name: baserow
+    ports:
+      - "3000:80"
+    environment:
+      BASEROW_PUBLIC_URL: http://localhost
+    volumes:
+      - baserow_data:/baserow/data
+    restart: unless-stopped
+
+volumes:
+  qdrant_data:
+  baserow_data:
